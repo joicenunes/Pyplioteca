@@ -129,11 +129,11 @@ class Biblioteca:
         qt_filtrados = len(filtrados)
         if qt_filtrados == 1:
             livro = filtrados[0]
-            print("1 usuário encontrado")
+            print("1 livro encontrado")
             return self.validarEscolha(livro)
         elif qt_filtrados > 1:
-            print("{n} usuários encontrados".format(n=qt_filtrados))
-            livro = self.escolheUsuario(filtrados, qt_filtrados)
+            print("{qt_filtrados} livros encontrados")
+            livro = self.escolheObjeto(filtrados, qt_filtrados, "livro")
             return livro
         
     def configurarFuncaoFiltrarParaLivros(self, func_name, tipo):
@@ -155,9 +155,11 @@ class Biblioteca:
                 else:
                     print("Opção inválida. Tente novamente.")
         elif func_name == "getGeneros":
-            filtro = input("Digite o gênero a ser buscado: ".format(v=tipo))
+            filtro = input("Digite o gênero a ser buscado: ")
+            lowerStr = lambda a : a.lower()
+            filtrarPor = lambda usuario : filtro.lower() in list(map(lowerStr, getattr(usuario, func_name)()))
         else:
-            filtro = input("Digite o {v} a ser buscado: ".format(v=tipo))
+            filtro = input("Digite o {tipo} a ser buscado: ")
         return filtrarPor
         
     def pesquisa_usuario(self):
@@ -173,7 +175,7 @@ class Biblioteca:
                 if tipo_filtro in opcoes:
                     tipo = tipos[opcoes.index(tipo_filtro)]
                     func_escolhida = "get" + tipo
-                    usuario = self.filtrarUsuarios(func_escolhida, input("Digite o {v} a ser buscado: ".format(v=tipo)))
+                    usuario = self.filtrarUsuarios(func_escolhida, input("Digite o {tipo} a ser buscado: "))
                     if usuario is not None:
                         opt_ok = True
                         return usuario
@@ -193,35 +195,33 @@ class Biblioteca:
             print("1 usuário encontrado")
             return self.validarEscolha(usuario)
         elif qt_filtrados > 1:
-            print("{n} usuários encontrados".format(n=qt_filtrados))
-            usuario = self.escolheUsuario(filtrados, qt_filtrados)
+            print("{qt_filtrados} usuários encontrados")
+            usuario = self.escolheObjeto(filtrados, qt_filtrados, "usuário")
             return usuario
 
-    def escolheUsuario(self, lista, qt):
+    def escolheObjeto(self, lista, qt, tipo_dado):
         opcao_ok = False
         while not opcao_ok:
-            print("Dados dos usuários encontrados")
+            print("Dados dos(as) {tipo_dado}s encontrados(as)")
             for i in range(qt):
-                usuario = lista[i]
-                print("Usuário #{n}".format(n=i+1))
-                print("Nome: {n}".format(n=usuario.getNome()))
-                print("Email: {e}".format(e=usuario.getEmail()))
-                print("Telefone: {t}".format(t=usuario.getTelefone()))
+                objeto = lista[i]
+                print("{t} #{n}".format(t=tipo_dado.capitalize(),n=i+1))
+                objeto.exibeDados()
                 if i < qt - 1:
                     print("--------------")
             opcoes = [str(i) for i in range(1, qt + 1)]
-            escolhido = input("Selecione o usuário desejado: ")
+            escolhido = input("Selecione o(a) {tipo_dado} desejado(a): ")
             if escolhido in opcoes:
-                usuarioEscolhido = lista[int(escolhido) - 1]
-                if self.validarEscolha(usuarioEscolhido):
-                    return usuarioEscolhido
+                objetoEscolhido = lista[int(escolhido) - 1]
+                if self.validarEscolha(objetoEscolhido):
+                    return objetoEscolhido
                 else:
                     return None
             else:
                 print("Opção inválida.")
 
     def validarEscolha(self, escolha):
-        print("Dados do usuário:")
+        print("Dados da opção escolhida:")
         escolha.exibeDados()
         escolha_ok = False
         while not escolha_ok:
@@ -298,8 +298,8 @@ class Livro:
         disponibilidade = "Disponível" if self.getDisponibilidade() else "Indisponível"
         print("Nome: {n}".format(n=self.getNome()))
         print("Autor: {e}".format(e=self.getAutor()))
-        print("Generos: {t}".format(t=generosToString))
-        print("Disponibilidade: {t}".format(t=disponibilidade))
+        print("Generos: {generosToString}")
+        print("Disponibilidade: {disponibilidade}")
         print("Endereço: {t}".format(t=str(self.getQuantidadeDePaginas())))
 
 class Prateleira:
