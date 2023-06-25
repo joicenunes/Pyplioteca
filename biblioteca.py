@@ -3,6 +3,7 @@
 """
 
 import sys
+import datetime
 
 class Biblioteca:
     def __init__(self):
@@ -29,17 +30,15 @@ class Biblioteca:
     def exec(self):
         while True:
             print("Selecione uma opção:")
-            print("1 - Cadastrar usuário")
-            print("2 - Cadastrar livro")
-            print("3 - Cadastrar empréstimo")
-            print("4 - Pesquisar livro")
-            print("5 - Pesquisar usuário")
-            print("6 - Gerar relatório")
-            print("7 - Sair")
+            acoes = ["Cadastrar usuário", "Cadastrar livro", "Cadastrar empréstimo", "Cadastrar devolução", "Pesquisar livro", "Pesquisar usuário", "Gerar relatório"]
+            opcoes = [str(i) for i in range(1, len(acoes))]
+            for i in range(len(acoes)):
+                print("{n} - {opcao}".format(n = i + 1, opcao = acoes[i]))
+            print("0 - Sair")
             selecionado = input("")
-            if selecionado == "7":
+            if selecionado == "0":
                 sys.exit()
-            self.seleciona_funcao(selecionado)
+            self.seleciona_funcao(selecionado, opcoes)
             
     def getUsuarios(self):
         return self._usuarios
@@ -58,10 +57,12 @@ class Biblioteca:
         elif opcao == '3':
             return self.cadastra_emprestimo()
         elif opcao == '4':
-            return self.pesquisa_livro()
+            return self.cadastra_devolucao()
         elif opcao == '5':
-            return self.pesquisa_usuario()
+            return self.pesquisa_livro()
         elif opcao == '6':
+            return self.pesquisa_usuario()
+        elif opcao == '7':
             return self.gera_relatorio()
         else:
             print("Essa opção não é válida. Tente novamente.")
@@ -90,15 +91,74 @@ class Biblioteca:
         
     def cadastra_emprestimo(self):
         print("Cadastro de Empréstimo")
-        print("Primeiro, selecione o usuário que está realizando o empréstimo.")
-        
+        print("Passo 1: Selecione o usuário que está realizando o empréstimo.")
         usuario = self.pesquisa_usuario()
-        livro = self.pesquisa_livro()
-        dt_emprestimo = ""
-        dt_devolucao = ""
-        emprestimo = Emprestimo(dt_emprestimo, dt_devolucao, usuario, livro)
-        self._historico_emprestimos.append(emprestimo)
         
+        print("Passo 2: Selecione o livro que está sendo pego emprestado.")
+        livro_ok = False
+        livro = Livro()
+        while not livro_ok:
+            livro = self.pesquisa_livro()
+            if livro.getDisponibilidade():
+                livro_ok = True
+            else:
+                print("Livro selecionado não está disponível. Por favor, selecione outro livro.")
+        
+        dt_emprestimo = datetime.datetime.now()
+
+        duracao_emprestimo = datetime.timedelta(weeks=2)
+        dt_devolucao = dt_emprestimo + duracao_emprestimo
+
+        emprestimo = Emprestimo(dt_emprestimo, dt_devolucao, usuario, livro, True)
+        self._historico_emprestimos.append(emprestimo)
+
+        print("O empréstimo foi cadastrado com sucesso. Devolução prevista para {d}".format(d=dt_devolucao))
+    
+    def cadastra_devolucao(self):
+        print("Pesquisar empréstimo por:")
+        opcoes = ["1", "2"]
+        tipos = ["Usuário", "Livro"]
+        fns = [self.pesquisa_usuario, self.pesquisa_livro]
+        for i in range(len(opcoes)):
+            print("{n} - {opcao}".format(n = opcoes[i], opcao = tipos[i]))
+        selecionado = input("")
+        tipo_filtro = ""
+        filtro = ""
+        opcao_ok = False
+        while not opcao_ok:
+            if selecionado in opcoes:
+                tipo_filtro = opcoes.index(selecionado)
+                filtro = fns[tipo_filtro]()
+            else:
+                print("Opção inválida. Tente novamente.")
+                continue
+            emprestimo = self.pesquisa_emprestimo(tipo_filtro, filtro)
+        pass
+
+    def pesquisa_emprestimo(self, tipo_filtro, filtro):
+        if len(self._historico_emprestimos) > 0:
+            opt_ok = False
+            while not opt_ok:
+                print("Procurar o livro por:")
+                tipos = ["Nome", "Autor", "Generos", "Disponibilidade"]
+                opcoes = ['1', '2', '3', '4']
+                for i in range(len(opcoes)):
+                    print("{n} - {opcao}".format(n = opcoes[i], opcao = tipos[i]))
+                tipo_filtro = input("")
+                if tipo_filtro in opcoes:
+                    tipo = tipos[opcoes.index(tipo_filtro)]
+                    func_escolhida = "get" + tipo
+                    livro = self.filtrarLivros(func_escolhida, tipo)
+                    if livro is not None:
+                        opt_ok = True
+                        return livro
+                    else:
+                        print("Nenhum livro selecionado, tentar novamente.")
+                else:
+                    print("Opção inválida. Tente novamente.")
+        else:
+            print("Não há empréstimos na base de dados. Antes de buscar um empréstimo, cadastre algum.")
+
     def pesquisa_livro(self):
         if len(self._livros) > 0:
             opt_ok = False
@@ -175,7 +235,7 @@ class Biblioteca:
                 if tipo_filtro in opcoes:
                     tipo = tipos[opcoes.index(tipo_filtro)]
                     func_escolhida = "get" + tipo
-                    usuario = self.filtrarUsuarios(func_escolhida, input("Digite o {tipo} a ser buscado: "))
+                    usuario = self.filtrarUsuarios(func_escolhida, input("Digite o {tipo} a ser buscado: ".format(tipo = tipo)))
                     if usuario is not None:
                         opt_ok = True
                         return usuario
@@ -309,11 +369,30 @@ class Prateleira:
         self._max_capacidade = max_capacidade
 
 class Emprestimo:
-    def __init__(self, dt_emprestimo, dt_devolucao, usuario, livro):
+    def __init__(self, dt_emprestimo, dt_devolucao, usuario: Usuario, livro: Livro, status: bool):
         self._dt_emprestimo = dt_emprestimo
         self._dt_devolucao = dt_devolucao
         self._usuario = usuario
         self._livro = livro
+        self._status = status
+
+    def getDataEmprestimo(self):
+        pass
+
+    def getDataDevolucao(self):
+        pass
+
+    def getUsuario(self):
+        pass
+
+    def getLivro(self):
+        pass
+
+    def getStatus(self):
+        pass
+
+    def verificarAtraso(self):
+        pass
 
 biblioteca = Biblioteca()
 biblioteca.exec()
