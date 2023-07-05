@@ -67,7 +67,6 @@ class Biblioteca:
         nome = input("Nome do livro: ")
         autor = input("Autor do livro: ")
         generosStr = input("Insira os gêneros do livro, separados por vírgula (,): ")
-        generos = [genero.strip() for genero in generosStr.split(",")]
         disponibilidade = True
         qt_pagina_valida = False
         while not qt_pagina_valida:
@@ -77,7 +76,7 @@ class Biblioteca:
                 qt_pagina_valida = True
             except Exception as e:
                 print("Quantidade de páginas não é um valor válido. Tente novamente. Valor esperado: inteiro.")
-        livro = Livro(nome, autor, generos, disponibilidade, qt_pagina)
+        livro = Livro(nome, autor, generosStr, disponibilidade, qt_pagina)
         self._livros.append(livro)
         
     def cadastra_emprestimo(self):
@@ -201,8 +200,8 @@ class Biblioteca:
                 opcoes = ["1", "2"]
                 tipos = ["Disponível", "Indisponível"]
                 tipos_boolean = [True, False]
-                for i in opcoes:
-                    print("{m} - {opcao}".format(n=opcoes[i], opcao = tipos[i]))
+                for i in range(len(opcoes)):
+                    print("{n} - {opcao}".format(n=opcoes[i], opcao = tipos[i]))
                 filtro = input("")
                 if filtro in opcoes:
                     filtrarPor = lambda usuario : getattr(usuario, func_name)() == tipos_boolean[opcoes.index(filtro)]
@@ -282,7 +281,7 @@ class Biblioteca:
         while not escolha_ok:
             validaEscolha = input("Confirmar escolha? (Y/n) ")
             if validaEscolha.lower() == "y" or validaEscolha == "":
-                return True
+                return escolha
             elif validaEscolha.lower() == "n":
                 print("Realizar a busca novamente.")
                 return False
@@ -319,10 +318,13 @@ class Usuario:
         print("Endereço: {t}".format(t=self.getEndereco()))
 
 class Livro:
-    def __init__(self, nome: str, autor: str, generos: str, qt_pagina: int, disponibilidade: bool = True):
+    def __init__(self, nome: str = None, autor: str = None, generos: str = None, qt_pagina: int = None, disponibilidade: bool = True):
         self._nome = nome
         self._autor = autor
-        self._generos = generos
+        if generos is not None:
+            self._generos = [genero.strip() for genero in generos.split(",")]
+        else:
+            self._generos = generos
         self._qt_pagina = qt_pagina
         self._disponibilidade = disponibilidade
 
@@ -349,7 +351,7 @@ class Livro:
     
     def exibeDados(self):
         generos = self.getGeneros()
-        generosToString = ' '.join(map(str, generos))
+        generosToString = ' '.join(generos)
         disponibilidade = "Disponível" if self.getDisponibilidade() else "Indisponível"
         print("Nome: {n}".format(n=self.getNome()))
         print("Autor: {e}".format(e=self.getAutor()))
