@@ -45,25 +45,13 @@ class Biblioteca:
     def getLivros(self):
         return self._livros
     
-    def seleciona_funcao(self, opcao):
-        if opcao == '1':
-            return self.cadastra_usuario()
-        elif opcao == '2':
-            return self.cadastra_livro()
-        elif opcao == '3':
-            return self.cadastra_emprestimo()
-        elif opcao == '4':
-            return self.cadastra_devolucao()
-        elif opcao == '5':
-            return self.pesquisa_livro()
-        elif opcao == '6':
-            return self.pesquisa_usuario()
-        elif opcao == '7':
-            return self.gera_relatorio()
+    def seleciona_funcao(self, opcao, opcoes):
+        funcs = ["cadastra_usuario", "cadastra_livro", "cadastra_emprestimo", "cadastra_devolucao", "pesquisa_livro", "pesquisa_usuario", "gera_relatorio"]
+        if opcao in opcoes:
+            return getattr(self, funcs[opcoes.index(opcao)])()
         else:
             print("Essa opção não é válida. Tente novamente.")
-            return
-
+            return        
         
     def cadastra_usuario(self):
         print("Cadastro de Usuário")
