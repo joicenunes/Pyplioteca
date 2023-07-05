@@ -65,9 +65,9 @@ class Biblioteca:
     def cadastra_livro(self):
         print("Cadastro de Livro")
         nome = input("Nome do livro: ")
-        autor = input("Autor do livro ")
-        generos = input("Insira os gêneros do livro, separados por vírgula (,): ")
-        generos = generos.split(",")
+        autor = input("Autor do livro: ")
+        generosStr = input("Insira os gêneros do livro, separados por vírgula (,): ")
+        generos = [genero.strip() for genero in generosStr.split(",")]
         disponibilidade = True
         qt_pagina_valida = False
         while not qt_pagina_valida:
@@ -322,7 +322,7 @@ class Livro:
     def __init__(self, nome: str, autor: str, generos: str, qt_pagina: int, disponibilidade: bool = True):
         self._nome = nome
         self._autor = autor
-        self._generos = generos.split(",")
+        self._generos = generos
         self._qt_pagina = qt_pagina
         self._disponibilidade = disponibilidade
 
