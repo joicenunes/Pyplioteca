@@ -355,7 +355,7 @@ class Livro:
         print("Autor: {e}".format(e=self.getAutor()))
         print("Generos: {g}".format(g = generosToString))
         print("Disponibilidade: {d}".format(d = disponibilidade))
-        print("Endereço: {t}".format(t=str(self.getQuantidadeDePaginas())))
+        print("Quantidade de páginas: {t}".format(t=str(self.getQuantidadeDePaginas())))
 
 class Emprestimo:
     def __init__(self, dt_emprestimo, dt_devolucao, usuario: Usuario, livro: Livro, status: bool):
