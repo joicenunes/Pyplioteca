@@ -5,6 +5,13 @@
 import sys
 import datetime
 
+def maximiza_caracteres_ou_corta_string(string, tamanho):
+    if len(string) <= tamanho:
+        string += ' ' * (tamanho - len(string))
+    else:
+        string = string[0:tamanho - 3] + "..."
+    return string
+
 class Biblioteca:
     def __init__(self):
         self._usuarios = []
@@ -12,19 +19,49 @@ class Biblioteca:
         self._historico_emprestimos = []
 
         #mockando usuarios para testar busca
-        usuario1 = Usuario("Joice", "joice@email.com", "12345678910", "Rua 1")
-        self._usuarios.append(usuario1)
-        usuario2 = Usuario("Lucas", "lucas@email.com", "10987654321", "Av 5")
-        self._usuarios.append(usuario2)
-        usuario3 = Usuario("Molly", "molly@email.com", "16051605910", "Rua 3")
-        self._usuarios.append(usuario3)
+        usuariosMockados = [
+            ("João Silva", "joao.silva@gmail.com", "(11) 98765-4321", "Rua A, 123"),
+            ("Maria Santos", "maria.santos@yahoo.com", "(22) 99999-8888", "Avenida B, 456"),
+            ("Pedro Almeida", "pedro.almeida@hotmail.com", "(33) 55555-4444", "Rua C, 789"),
+            ("Ana Oliveira", "ana.oliveira@gmail.com", "(44) 12345-6789", "Avenida D, 012"),
+            ("Lucas Pereira", "lucas.pereira@yahoo.com", "(55) 77777-6666", "Rua E, 345"),
+            ("Mariana Costa", "mariana.costa@hotmail.com", "(66) 22222-1111", "Avenida F, 678"),
+            ("Carlos Santos", "carlos.santos@gmail.com", "(77) 44444-3333", "Rua G, 901"),
+            ("Camila Rodrigues", "camila.rodrigues@yahoo.com", "(88) 88888-9999", "Avenida H, 234"),
+            ("Rafaela Fernandes", "rafaela.fernandes@hotmail.com", "(99) 33333-2222", "Rua I, 567"),
+            ("Bruno Oliveira", "bruno.oliveira@gmail.com", "(00) 11111-0000", "Avenida J, 890")
+        ]
+        """ Obrigada chatGPT pelos dados fictícios """
+        for info in usuariosMockados:
+            nome, email, telefone, endereco = info
+            usuario = Usuario(nome, email, telefone, endereco)
+            self._usuarios.append(usuario)
+
         #mockando livros para testar busca
-        livro1 = Livro("Sobre os ossos dos mortos", "Olga Tokarczuk", "Aventura,Suspense,Mistério", 246)
-        self._livros.append(livro1)
-        livro2 = Livro("Crepúsculo", "Stephenie Meyer", "Romance,Fantasia", 478)
-        self._livros.append(livro2)
-        livro3 = Livro("Cloud Atlas", "David Mitchell", "Ficção Científica,Ficção Histórica", 530)
-        self._livros.append(livro3)
+        livrosMockados = [
+            ("Sobre os ossos dos mortos", "Olga Tokarczuk", "Aventura,Suspense,Mistério", 246),
+            ("Crepúsculo", "Stephenie Meyer", "Romance,Fantasia", 478),
+            ("Cloud Atlas", "David Mitchell", "Ficção Científica,Ficção Histórica", 530),
+            ("Dom Quixote", "Miguel de Cervantes", "Romance, Clássico", 863),
+            ("1984", "George Orwell", "Distopia, Ficção Científica", 328),
+            ("Orgulho e Preconceito", "Jane Austen", "Romance, Clássico", 432),
+            ("Crime e Castigo", "Fyodor Dostoevsky", "Romance, Clássico", 671),
+            ("O Senhor dos Anéis", "J.R.R. Tolkien", "Fantasia, Aventura", 1178),
+            ("A Revolução dos Bichos", "George Orwell", "Sátira, Ficção Política", 144),
+            ("Cem Anos de Solidão", "Gabriel García Márquez", "Realismo Mágico, Romance", 417),
+            ("O Grande Gatsby", "F. Scott Fitzgerald", "Romance, Drama", 180),
+            ("As Crônicas de Nárnia", "C.S. Lewis", "Fantasia, Aventura", 767),
+            ("A Metamorfose", "Franz Kafka", "Ficção Absurda, Clássico", 55),
+            ("Moby Dick", "Herman Melville", "Romance, Aventura", 585),
+            ("O Conde de Monte Cristo", "Alexandre Dumas", "Aventura, Drama", 1312),
+            ("O Pequeno Príncipe", "Antoine de Saint-Exupéry", "Fantasia, Filosófico", 96),
+            ("Ulisses", "James Joyce", "Modernismo, Romance", 783)
+        ]
+        """ Obrigada chatGPT pelos dados fictícios """
+        for info in livrosMockados:
+            nome, autor, generos, paginas = info
+            livro = Livro(nome, autor, generos, paginas)
+            self._livros.append(livro)
 
     def exec(self):
         while True:
@@ -51,26 +88,32 @@ class Biblioteca:
             return getattr(self, funcs[opcoes.index(opcao)])()
         else:
             print("Essa opção não é válida. Tente novamente.")
-            return        
+            return
+
+    def exibe_opcoes(self, opcoes, tipos):
+        for i in range(len(opcoes)):
+            print("{n} - {opcao}".format(n = opcoes[i], opcao = tipos[i]))
         
     def cadastra_usuario(self):
-        print("Cadastro de Usuário")
-        nome = input("Nome do usuário: ")
-        email = input("Email do usuário ")
-        telefone = input("Telefone do usuário: ")
-        endereco = input("Endereço do usuário: ")
+        print("Cadastro de Usuário (insira 0 para voltar para o menu anterior sem salvar)")
+        nome = input("(1/4) Nome do usuário: ")
+        email = input("(2/4) Email do usuário ")
+        telefone = input("(3/4) Telefone do usuário: ")
+        endereco = input("(4/4) Endereço do usuário: ")
         usuario = Usuario(nome, email, telefone, endereco)
         self._usuarios.append(usuario)
+        print("Usuário criado:")
+        usuario.exibeDados()
         
     def cadastra_livro(self):
         print("Cadastro de Livro")
-        nome = input("Nome do livro: ")
-        autor = input("Autor do livro: ")
-        generosStr = input("Insira os gêneros do livro, separados por vírgula (,): ")
+        nome = input("(1/4) Nome do livro: ")
+        autor = input("(2/4) Autor do livro: ")
+        generosStr = input("(3/4) Insira os gêneros do livro, separados por vírgula (,): ")
         disponibilidade = True
         qt_pagina_valida = False
         while not qt_pagina_valida:
-            qt_pagina = input("Quantidade de páginas: ")
+            qt_pagina = input("(4/4) Quantidade de páginas: ")
             try:
                 qt_pagina = int(qt_pagina)
                 qt_pagina_valida = True
@@ -78,13 +121,15 @@ class Biblioteca:
                 print("Quantidade de páginas não é um valor válido. Tente novamente. Valor esperado: inteiro.")
         livro = Livro(nome, autor, generosStr, disponibilidade, qt_pagina)
         self._livros.append(livro)
+        print("Livro criado:")
+        livro.exibeDados()
         
     def cadastra_emprestimo(self):
         print("Cadastro de Empréstimo")
-        print("Passo 1: Selecione o usuário que está realizando o empréstimo.")
+        print("(1/2) Selecione o usuário que está realizando o empréstimo.")
         usuario = self.pesquisa_usuario()
         
-        print("Passo 2: Selecione o livro que está sendo emprestado.")
+        print("(2/2) Selecione o livro que está sendo emprestado.")
         livro = Livro()
         livro_disponibilidade_ok = False
         while not livro_disponibilidade_ok:
@@ -115,8 +160,7 @@ class Biblioteca:
             opcao_ok = False
             while not opcao_ok:
                 print("Pesquisar empréstimo por:")
-                for i in range(len(opcoes)):
-                    print("{n} - {opcao}".format(n = opcoes[i], opcao = tipos[i]))
+                self.exibe_opcoes(opcoes, tipos)
                 selecionado = input("")
                 if selecionado in opcoes:
                     tipo_filtro = opcoes.index(selecionado)
@@ -160,8 +204,7 @@ class Biblioteca:
                 print("Procurar o livro por:")
                 tipos = ["Nome", "Autor", "Generos", "Disponibilidade"]
                 opcoes = ['1', '2', '3', '4']
-                for i in range(len(opcoes)):
-                    print("{n} - {opcao}".format(n = opcoes[i], opcao = tipos[i]))
+                self.exibe_opcoes(opcoes, tipos)
                 tipo_filtro = input("")
                 if tipo_filtro in opcoes:
                     tipo = tipos[opcoes.index(tipo_filtro)]
@@ -191,8 +234,6 @@ class Biblioteca:
             return livro
         
     def configurarFuncaoFiltrarParaLivros(self, func_name, tipo):
-        filtro = ""
-        filtrarPor = lambda usuario : filtro.lower() in getattr(usuario, func_name)().lower()
         if func_name == "getDisponibilidade":
             disponibilidade_ok = False
             while not disponibilidade_ok:
@@ -200,21 +241,19 @@ class Biblioteca:
                 opcoes = ["1", "2"]
                 tipos = ["Disponível", "Indisponível"]
                 tipos_boolean = [True, False]
-                for i in range(len(opcoes)):
-                    print("{n} - {opcao}".format(n=opcoes[i], opcao = tipos[i]))
+                self.exibe_opcoes(opcoes, tipos)
                 filtro = input("")
                 if filtro in opcoes:
-                    filtrarPor = lambda usuario : getattr(usuario, func_name)() == tipos_boolean[opcoes.index(filtro)]
-                    disponibilidade_ok = True
+                    return lambda usuario : getattr(usuario, func_name)() == tipos_boolean[opcoes.index(filtro)]
                 else:
                     print("Opção inválida. Tente novamente.")
         elif func_name == "getGeneros":
             filtro = input("Digite o gênero a ser buscado: ")
             lowerStr = lambda a : a.lower()
-            filtrarPor = lambda usuario : filtro.lower() in list(map(lowerStr, getattr(usuario, func_name)()))
+            return lambda usuario : filtro.lower() in list(map(lowerStr, getattr(usuario, func_name)()))
         else:
             filtro = input("Digite o {t} a ser buscado: ".format(t = tipo))
-        return filtrarPor
+            return lambda usuario : filtro.lower() in getattr(usuario, func_name)().lower()
         
     def pesquisa_usuario(self):
         if len(self._usuarios) > 0:
@@ -223,8 +262,7 @@ class Biblioteca:
                 print("Procurar o usuário por:")
                 tipos = ["Nome", "Email", "Telefone"]
                 opcoes = ['1', '2', '3']
-                for i in range(len(opcoes)):
-                    print("{n} - {opcao}".format(n = opcoes[i], opcao = tipos[i]))
+                self.exibe_opcoes(opcoes, tipos)
                 tipo_filtro = input("")
                 if tipo_filtro in opcoes:
                     tipo = tipos[opcoes.index(tipo_filtro)]
@@ -275,7 +313,7 @@ class Biblioteca:
                 print("Opção inválida.")
 
     def validarEscolha(self, escolha):
-        print("Dados da opção escolhida:")
+        print("Dados da opção")
         escolha.exibeDados()
         escolha_ok = False
         while not escolha_ok:
@@ -289,8 +327,54 @@ class Biblioteca:
                 print("Opção inválida. Tente novamente:")
         
     def gera_relatorio(self):
-        pass
+        opcoes = ["1", "2", "3", "4", "5"]
+        tipos = ["Histórico de empréstimo por usuário", "Histórico de empréstimo por livro", "Livros disponíveis", "Livros indisponíveis", "Empréstimos em atraso"]
+        criterios = ["usuario", "livro", True, False, "atraso"]
+        print("Selecione o tipo de relatório:")
+        self.exibe_opcoes(opcoes, tipos)
+        selecionado = input("")
+        if selecionado in ["1", "2", "5"]:
+            self.gera_relatorio_emprestimo(criterios[opcoes.index(selecionado)])
+        elif selecionado in ["3", "4"]:
+            self.gera_relatorio_livros_por_data(criterios[opcoes.index(selecionado)])
+        else:
+            print("Essa opção não é válida.")
+
+    def gera_relatorio_emprestimo(self, criterio):
+        filtrados = []
+
+        opcoes = ["usuario", "livro", "atraso"]
+        filtro_fns = ["pesquisa_usuario", "pesquisa_livro"]
+        lambdas = ["getUsuario", "getLivro", "verificarAtraso"]
         
+        filtro = True
+        criterio_idx = opcoes.index(criterio)
+
+        if criterio_idx < 2:
+            filtro = getattr(self, filtro_fns[criterio_idx])()
+
+        filtrados = list(filter(lambda emprestimo : getattr(emprestimo, lambdas[criterio_idx])() == filtro, self._historico_emprestimos))
+
+        if len(filtrados) > 0:
+            print("Imprimindo relatório de empréstimo. Critério: {c}".format(c = criterio))
+            print("{nome} | {titulo} | {dt_emp} | {dt_dev} | {status}".format(nome = maximiza_caracteres_ou_corta_string("Nome do Usuário", 50), titulo = maximiza_caracteres_ou_corta_string("Título do Livro", 50), dt_emp = maximiza_caracteres_ou_corta_string("Data do Empréstimo", 10), dt_dev = maximiza_caracteres_ou_corta_string("Data da Devolução", 10), status = maximiza_caracteres_ou_corta_string("Status", 10)))
+            for i in range(len(filtrados)):
+                print(filtrados[i].exibeDadosTabelado)
+        else:
+            print("Não foram encontrados dados para o relatório.")
+
+    def gera_relatorio_livros(self, disponibilidade):
+        """
+        Foi removida a ideia de filtragem por data dinâmica pois para essa ideia funcionar eu teria que ter desenvolvido um sistema de reserva e eu só pensei isso muito em cima da entrega
+        """
+        filtrados = list(filter(lambda livro : livro.getDisponibilidade() == disponibilidade), self._livros)
+        if len(filtrados) > 0:
+            print("Imprimindo relatório de livros. Critério: {c}".format(c = "Disponível" if disponibilidade else "Indisponível"))
+            print("{titulo} | {autor} | {generos} | {qt_paginas}".format(titulo = maximiza_caracteres_ou_corta_string("Título do Livro", 50), autor = maximiza_caracteres_ou_corta_string("Nome do Autor", 50), generos = maximiza_caracteres_ou_corta_string("Gêneros", 50), qt_paginas = maximiza_caracteres_ou_corta_string("Qt. Páginas", 11)))
+            for i in range(len(filtrados)):
+                print(filtrados[i].exibeDadosTabelado())
+        else:
+            print("Não foram encontrados dados para o relatório.")
 
 class Usuario:
     def __init__(self, nome, email, telefone, endereco):
@@ -359,6 +443,13 @@ class Livro:
         print("Disponibilidade: {d}".format(d = disponibilidade))
         print("Quantidade de páginas: {t}".format(t=str(self.getQuantidadeDePaginas())))
 
+    def exibeDadosTabelado(self, max_nomes = 50):
+        titulo_livro = maximiza_caracteres_ou_corta_string(self.getNome(), max_nomes)
+        nome_autor = maximiza_caracteres_ou_corta_string(self.getAutor(), max_nomes)
+        generosToString = maximiza_caracteres_ou_corta_string(' '.join(self.getGeneros()), max_nomes)
+        qt_paginas_maximizada = maximiza_caracteres_ou_corta_string(str(self.getQuantidadeDePaginas(), 4))
+        print("{lTitulo} | {lAutor} | {generos} | {qt_paginas}".format(lTitulo = titulo_livro, lAutor = nome_autor, generos = generosToString, qt_paginas = qt_paginas_maximizada))
+
 class Emprestimo:
     def __init__(self, dt_emprestimo, dt_devolucao, usuario: Usuario, livro: Livro, status: bool):
         self._dt_emprestimo = dt_emprestimo
@@ -389,16 +480,28 @@ class Emprestimo:
     def realizarDevolucao(self):
         self._status = False
         self._livro.setDisponibilidade(True)
+
+    def descreveStatus(self):
+        return "Finalizada" if self._status == False else ("Em Atraso" if self.verificaAtraso() else "Em Aberto")
+    
+    def formataData(self, data):
+        return data.strftime("%m/%d/%Y")
     
     def exibeDados(self):
-        status = "Finalizada" if self._status == False else ("Em Atraso" if self.verificaAtraso() else "Em Aberto")
-        data_emprestimo_formatada = self.getDataEmprestimo().strftime("%m/%d/%Y")
-        data_devolucao_formatada = self.getDataDevolucao().strftime("%m/%d/%Y")
+        data_emprestimo_formatada = self.formataData(self.getDataEmprestimo())
+        data_devolucao_formatada = self.formataData(self.getDataDevolucao())
         print("Usuario: {n}".format(n = self.getUsuario().exibeDados()))
         print("Livro: {e}".format(e = self.getLivro().exibeDados()))
         print("Data de empréstimo: {dt_e}".format(dt_e = data_emprestimo_formatada))
         print("Data de devolução: {dt_d}".format(dt_d = data_devolucao_formatada))
-        print("Status: {s}".format(s = status))
+        print("Status: {s}".format(s = self.descreveStatus()))
+
+    def exibeDadosTabelado(self, max_nomes = 50):
+        data_emprestimo_formatada = self.formataData(self.getDataEmprestimo())
+        data_devolucao_formatada = self.formataData(self.getDataDevolucao())
+        nome_usuario = maximiza_caracteres_ou_corta_string(self.getUsuario().getNome(), max_nomes)
+        titulo_livro = maximiza_caracteres_ou_corta_string(self.getLivro().getNome(), max_nomes)
+        print("{uNome} | {lTitulo} | {dEmprestimo} | {dDevolucao} | {s}".format(uNome = nome_usuario, lTitulo = titulo_livro, dEmprestimo = data_emprestimo_formatada, dDevolucao = data_devolucao_formatada, s = self.descreveStatus()))
 
 biblioteca = Biblioteca()
 biblioteca.exec()
