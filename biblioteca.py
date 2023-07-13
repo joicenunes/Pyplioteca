@@ -5,12 +5,11 @@
 import sys
 import datetime
 
-def maximiza_caracteres_ou_corta_string(string, tamanho):
-    if len(string) <= tamanho:
-        string += ' ' * (tamanho - len(string))
-    else:
-        string = string[0:tamanho - 3] + "..."
-    return string
+from emprestimo import Emprestimo
+from livro import Livro
+from usuario import Usuario
+
+from helper import maximiza_caracteres_ou_corta_string
 
 class Biblioteca:
     def __init__(self):
@@ -62,6 +61,29 @@ class Biblioteca:
             nome, autor, generos, paginas = info
             livro = Livro(nome, autor, generos, paginas)
             self._livros.append(livro)
+
+        hoje = datetime.datetime.now()
+        duas_semanas = datetime.timedelta(weeks=2)
+        dt_devolucao = hoje + duas_semanas
+
+        """ aqui sao os emprestimos mockados bonitinhos pra testar os relatórios de empréstimo
+        emprestimosMockados = [
+            (self._usuarios[0], self._livros[0], hoje, dt_devolucao),
+            (self._usuarios[3], self._livros[3], hoje, dt_devolucao),
+            (self._usuarios[6], self._livros[6], hoje, dt_devolucao),
+        ]"""
+
+        """ aqui vao os emprestimos atrasados para testar o relatorio de emprestimo em atraso """
+        emprestimosMockados = [
+            (self._usuarios[0], self._livros[0], hoje, hoje + duas_semanas),
+            (self._usuarios[3], self._livros[3], hoje - duas_semanas, hoje - datetime.timedelta(days=2)),
+            (self._usuarios[6], self._livros[6], hoje - duas_semanas, hoje - datetime.timedelta(days=5)),
+        ]
+
+        for info in emprestimosMockados:
+            usuario, livro, dt_emp, dt_dev = info
+            emprestimo = Emprestimo(dt_emp, dt_dev, usuario, livro)
+            self._historico_emprestimos.append(emprestimo)
 
     def exec(self):
         while True:
@@ -146,10 +168,10 @@ class Biblioteca:
         duracao_emprestimo = datetime.timedelta(weeks=2)
         dt_devolucao = dt_emprestimo + duracao_emprestimo
 
-        emprestimo = Emprestimo(dt_emprestimo, dt_devolucao, usuario, livro, True)
+        emprestimo = Emprestimo(dt_emprestimo, dt_devolucao, usuario, livro)
         self._historico_emprestimos.append(emprestimo)
 
-        print("O empréstimo foi cadastrado com sucesso. Devolução prevista para {d}".format(d=dt_devolucao))
+        print("O empréstimo foi cadastrado com sucesso. Devolução prevista para {d}".format(d=dt_devolucao.strftime("%d/%m/%Y")))
     
     def cadastra_devolucao(self):
         if len(self._historico_emprestimos) > 0:
@@ -343,7 +365,7 @@ class Biblioteca:
         if selecionado in ["1", "2", "5"]:
             self.gera_relatorio_emprestimo(criterios[opcoes.index(selecionado)])
         elif selecionado in ["3", "4"]:
-            self.gera_relatorio_livros_por_data(criterios[opcoes.index(selecionado)])
+            self.gera_relatorio_livros(criterios[opcoes.index(selecionado)])
         else:
             print("Essa opção não é válida.")
 
@@ -364,9 +386,9 @@ class Biblioteca:
 
         if len(filtrados) > 0:
             print("Imprimindo relatório de empréstimo. Critério: {c}".format(c = criterio))
-            print("{nome} | {titulo} | {dt_emp} | {dt_dev} | {status}".format(nome = maximiza_caracteres_ou_corta_string("Nome do Usuário", 50), titulo = maximiza_caracteres_ou_corta_string("Título do Livro", 50), dt_emp = maximiza_caracteres_ou_corta_string("Data do Empréstimo", 10), dt_dev = maximiza_caracteres_ou_corta_string("Data da Devolução", 10), status = maximiza_caracteres_ou_corta_string("Status", 10)))
+            print("{nome} | {titulo} | {dt_emp} | {dt_dev} | {status}".format(nome = maximiza_caracteres_ou_corta_string("Nome do Usuário", 50), titulo = maximiza_caracteres_ou_corta_string("Título do Livro", 50), dt_emp = maximiza_caracteres_ou_corta_string("Empréstimo", 10), dt_dev = maximiza_caracteres_ou_corta_string("Devolução", 10), status = maximiza_caracteres_ou_corta_string("Status", 10)))
             for i in range(len(filtrados)):
-                print(filtrados[i].exibeDadosTabelado)
+                filtrados[i].exibeDadosTabelado()
         else:
             print("Não foram encontrados dados para o relatório.")
 
@@ -374,141 +396,14 @@ class Biblioteca:
         """
         Foi removida a ideia de filtragem por data dinâmica pois para essa ideia funcionar eu teria que ter desenvolvido um sistema de reserva e eu só pensei isso muito em cima da entrega
         """
-        filtrados = list(filter(lambda livro : livro.getDisponibilidade() == disponibilidade), self._livros)
+        filtrados = list(filter(lambda livro : livro.getDisponibilidade() == disponibilidade, self._livros))
         if len(filtrados) > 0:
             print("Imprimindo relatório de livros. Critério: {c}".format(c = "Disponível" if disponibilidade else "Indisponível"))
             print("{titulo} | {autor} | {generos} | {qt_paginas}".format(titulo = maximiza_caracteres_ou_corta_string("Título do Livro", 50), autor = maximiza_caracteres_ou_corta_string("Nome do Autor", 50), generos = maximiza_caracteres_ou_corta_string("Gêneros", 50), qt_paginas = maximiza_caracteres_ou_corta_string("Qt. Páginas", 11)))
             for i in range(len(filtrados)):
-                print(filtrados[i].exibeDadosTabelado())
+                filtrados[i].exibeDadosTabelado()
         else:
             print("Não foram encontrados dados para o relatório.")
-
-class Usuario:
-    def __init__(self, nome, email, telefone, endereco):
-        self._nome = nome
-        self._email = email
-        self._telefone = telefone
-        self._endereco = endereco
-
-    def getNome(self):
-        return self._nome
-
-    def getEmail(self):
-        return self._email
-
-    def getTelefone(self):
-        return self._telefone
-
-    def getEndereco(self):
-        return self._endereco
-    
-    def exibeDados(self):
-        print("Nome: {n}".format(n=self.getNome()))
-        print("Email: {e}".format(e=self.getEmail()))
-        print("Telefone: {t}".format(t=self.getTelefone()))
-        print("Endereço: {t}".format(t=self.getEndereco()))
-
-class Livro:
-    def __init__(self, nome: str = None, autor: str = None, generos: str = None, qt_pagina: int = None, disponibilidade: bool = True):
-        self._nome = nome
-        self._autor = autor
-        if generos is not None:
-            self._generos = [genero.strip() for genero in generos.split(",")]
-        else:
-            self._generos = generos
-        self._qt_pagina = qt_pagina
-        self._disponibilidade = disponibilidade
-
-    def getNome(self):
-        return self._nome
-    
-    def getAutor(self):
-        return self._autor
-    
-    def getGeneros(self):
-        return self._generos
-    
-    def getDisponibilidade(self):
-        return self._disponibilidade
-    
-    def setDisponibilidade(self, valor: bool):
-        if isinstance(valor, bool):
-            self._disponibilidade = valor
-        else:
-            print("Erro ao setar novo valor de disponibilidade {nv}, valor anterior inalterado para o livro {n}. Valor atual = {v}.".format(nv = valor, n = self._nome, v = self._disponibilidade))
-
-    def getQuantidadeDePaginas(self):
-        return self._qt_pagina
-    
-    def exibeDados(self):
-        generos = self.getGeneros()
-        generosToString = ' '.join(generos)
-        disponibilidade = "Disponível" if self.getDisponibilidade() else "Indisponível"
-        print("Nome: {n}".format(n=self.getNome()))
-        print("Autor: {e}".format(e=self.getAutor()))
-        print("Generos: {g}".format(g = generosToString))
-        print("Disponibilidade: {d}".format(d = disponibilidade))
-        print("Quantidade de páginas: {t}".format(t=str(self.getQuantidadeDePaginas())))
-
-    def exibeDadosTabelado(self, max_nomes = 50):
-        titulo_livro = maximiza_caracteres_ou_corta_string(self.getNome(), max_nomes)
-        nome_autor = maximiza_caracteres_ou_corta_string(self.getAutor(), max_nomes)
-        generosToString = maximiza_caracteres_ou_corta_string(' '.join(self.getGeneros()), max_nomes)
-        qt_paginas_maximizada = maximiza_caracteres_ou_corta_string(str(self.getQuantidadeDePaginas(), 4))
-        print("{lTitulo} | {lAutor} | {generos} | {qt_paginas}".format(lTitulo = titulo_livro, lAutor = nome_autor, generos = generosToString, qt_paginas = qt_paginas_maximizada))
-
-class Emprestimo:
-    def __init__(self, dt_emprestimo, dt_devolucao, usuario: Usuario, livro: Livro, status: bool):
-        self._dt_emprestimo = dt_emprestimo
-        self._dt_devolucao = dt_devolucao
-        self._usuario = usuario
-        self._livro = livro
-        self._status = status
-        self._livro.setDisponibilidade(False)
-
-    def getDataEmprestimo(self):
-        return self._dt_emprestimo
-
-    def getDataDevolucao(self):
-        return self._dt_devolucao
-
-    def getUsuario(self):
-        return self._usuario
-
-    def getLivro(self):
-        return self._livro
-
-    def getStatus(self):
-        return self._status
-
-    def verificarAtraso(self):
-        return self._status == True and datetime.datetime.now() > self.getDataDevolucao()
-
-    def realizarDevolucao(self):
-        self._status = False
-        self._livro.setDisponibilidade(True)
-
-    def descreveStatus(self):
-        return "Finalizada" if self._status == False else ("Em Atraso" if self.verificaAtraso() else "Em Aberto")
-    
-    def formataData(self, data):
-        return data.strftime("%m/%d/%Y")
-    
-    def exibeDados(self):
-        data_emprestimo_formatada = self.formataData(self.getDataEmprestimo())
-        data_devolucao_formatada = self.formataData(self.getDataDevolucao())
-        print("Usuario: {n}".format(n = self.getUsuario().exibeDados()))
-        print("Livro: {e}".format(e = self.getLivro().exibeDados()))
-        print("Data de empréstimo: {dt_e}".format(dt_e = data_emprestimo_formatada))
-        print("Data de devolução: {dt_d}".format(dt_d = data_devolucao_formatada))
-        print("Status: {s}".format(s = self.descreveStatus()))
-
-    def exibeDadosTabelado(self, max_nomes = 50):
-        data_emprestimo_formatada = self.formataData(self.getDataEmprestimo())
-        data_devolucao_formatada = self.formataData(self.getDataDevolucao())
-        nome_usuario = maximiza_caracteres_ou_corta_string(self.getUsuario().getNome(), max_nomes)
-        titulo_livro = maximiza_caracteres_ou_corta_string(self.getLivro().getNome(), max_nomes)
-        print("{uNome} | {lTitulo} | {dEmprestimo} | {dDevolucao} | {s}".format(uNome = nome_usuario, lTitulo = titulo_livro, dEmprestimo = data_emprestimo_formatada, dDevolucao = data_devolucao_formatada, s = self.descreveStatus()))
 
 biblioteca = Biblioteca()
 biblioteca.exec()
