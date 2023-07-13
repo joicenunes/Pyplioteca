@@ -67,9 +67,9 @@ class Biblioteca:
         while True:
             print("Selecione uma opção:")
             acoes = ["Cadastrar usuário", "Cadastrar livro", "Cadastrar empréstimo", "Cadastrar devolução", "Pesquisar livro", "Pesquisar usuário", "Gerar relatório"]
-            opcoes = [str(i) for i in range(1, len(acoes))]
+            opcoes = [str(i) for i in range(1, len(acoes) + 1)]
             for i in range(len(acoes)):
-                print("{n} - {opcao}".format(n = i + 1, opcao = acoes[i]))
+                print("{n} - {opcao}".format(n = opcoes[i], opcao = acoes[i]))
             print("0 - Sair")
             selecionado = input("")
             if selecionado == "0":
@@ -95,15 +95,16 @@ class Biblioteca:
             print("{n} - {opcao}".format(n = opcoes[i], opcao = tipos[i]))
         
     def cadastra_usuario(self):
-        print("Cadastro de Usuário (insira 0 para voltar para o menu anterior sem salvar)")
+        print("Cadastro de Usuário")
         nome = input("(1/4) Nome do usuário: ")
         email = input("(2/4) Email do usuário ")
         telefone = input("(3/4) Telefone do usuário: ")
         endereco = input("(4/4) Endereço do usuário: ")
         usuario = Usuario(nome, email, telefone, endereco)
-        self._usuarios.append(usuario)
-        print("Usuário criado:")
         usuario.exibeDados()
+        usuario = self.loop_confirmacao_binaria(usuario, "Confirmar criação desse usuário? (Y/n)", "Usuário criado.", "Criação de usuário cancelada.")
+        if usuario:
+            self._usuarios.append(usuario)
         
     def cadastra_livro(self):
         print("Cadastro de Livro")
@@ -120,10 +121,11 @@ class Biblioteca:
             except Exception as e:
                 print("Quantidade de páginas não é um valor válido. Tente novamente. Valor esperado: inteiro.")
         livro = Livro(nome, autor, generosStr, disponibilidade, qt_pagina)
-        self._livros.append(livro)
-        print("Livro criado:")
         livro.exibeDados()
-        
+        livro = self.loop_confirmacao_binaria(livro, "Confirmar criação desse livro? (Y/n)", "Livro criado.", "Criação de livro cancelada.")
+        if livro:
+            self._livros.append(livro)
+
     def cadastra_emprestimo(self):
         print("Cadastro de Empréstimo")
         print("(1/2) Selecione o usuário que está realizando o empréstimo.")
@@ -315,13 +317,18 @@ class Biblioteca:
     def validarEscolha(self, escolha):
         print("Dados da opção")
         escolha.exibeDados()
-        escolha_ok = False
-        while not escolha_ok:
-            validaEscolha = input("Confirmar escolha? (Y/n) ")
-            if validaEscolha.lower() == "y" or validaEscolha == "":
-                return escolha
-            elif validaEscolha.lower() == "n":
-                print("Realizar a busca novamente.")
+        return self.loop_confirmacao_binaria(escolha, "Confirmar escolha? (Y/n) ", "", "Realizar a busca novamente.")
+    
+    def loop_confirmacao_binaria(self, objeto, pergunta, mensagem_sucesso, mensagem_erro):
+        confirmado = False
+        while not confirmado:
+            validacao = input(pergunta)
+            if validacao.lower() == "y" or validacao == "":
+                fim = "" if mensagem_sucesso == "" else "\n"
+                print(mensagem_sucesso, end = fim)
+                return objeto
+            elif validacao.lower() == "n":
+                print(mensagem_erro)
                 return False
             else:
                 print("Opção inválida. Tente novamente:")
